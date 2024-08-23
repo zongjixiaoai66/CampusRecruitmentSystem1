@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ZhaopinChatDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.yonghu_id as yonghuId
+        ,a.qiye_id as qiyeId
+        ,a.zhaopin_chat_issue_text as zhaopinChatIssueText
+        ,a.issue_time as issueTime
+        ,a.zhaopin_chat_reply_text as zhaopinChatReplyText
+        ,a.reply_time as replyTime
+        ,a.zhuangtai_types as zhuangtaiTypes
+        ,a.zhaopin_chat_types as zhaopinChatTypes
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.ZhaopinChatView" >
+        SELECT
+        <include refid="Base_Column_List" />
+        <!-- 级联表的字段 -->
+        ,qiye.qiye_name as qiyeName
+        ,qiye.qiye_types as qiyeTypes
+        ,qiye.qiye_phone as qiyePhone
+        ,qiye.qiye_email as qiyeEmail
+        ,qiye.qiye_photo as qiyePhoto
+        ,qiye.qiye_guimo as qiyeGuimo
+        ,qiye.qiye_chenglishijian_time as qiyeChenglishijianTime
+        ,qiye.qiye_content as qiyeContent
+        ,qiye.qiye_delete as qiyeDelete
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yonghu.yonghu_zhuangtai_types as yonghuZhuangtaiTypes
+
+        FROM zhaopin_chat  a
+        left JOIN qiye qiye ON a.qiye_id = qiye.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test="params.qiyeId != null and params.qiyeId != ''">
+                and (
+                    a.qiye_id = #{params.qiyeId}
+                )
+            </if>
+            <if test=" params.zhaopinChatIssueText != '' and params.zhaopinChatIssueText != null and params.zhaopinChatIssueText != 'null' ">
+                and a.zhaopin_chat_issue_text like CONCAT('%',#{params.zhaopinChatIssueText},'%')
+            </if>
+            <if test=" params.issueTimeStart != '' and params.issueTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.issue_time) >= UNIX_TIMESTAMP(#{params.issueTimeStart}) ]]>
+            </if>
+            <if test=" params.issueTimeEnd != '' and params.issueTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.issue_time) <= UNIX_TIMESTAMP(#{params.issueTimeEnd}) ]]>
+            </if>
+            <if test="params.issueTime != null and params.issueTime != ''">
+                and a.issue_time = #{params.issueTime}
+            </if>
+            <if test=" params.zhaopinChatReplyText != '' and params.zhaopinChatReplyText != null and params.zhaopinChatReplyText != 'null' ">
+                and a.zhaopin_chat_reply_text like CONCAT('%',#{params.zhaopinChatReplyText},'%')
+            </if>
+            <if test=" params.replyTimeStart != '' and params.replyTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.reply_time) >= UNIX_TIMESTAMP(#{params.replyTimeStart}) ]]>
+            </if>
+            <if test=" params.replyTimeEnd != '' and params.replyTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.reply_time) <= UNIX_TIMESTAMP(#{params.replyTimeEnd}) ]]>
+            </if>
+            <if test="params.replyTime != null and params.replyTime != ''">
+                and a.reply_time = #{params.replyTime}
+            </if>
+            <if test="params.zhuangtaiTypes != null and params.zhuangtaiTypes != ''">
+                and a.zhuangtai_types = #{params.zhuangtaiTypes}
+            </if>
+            <if test="params.zhaopinChatTypes != null and params.zhaopinChatTypes != ''">
+                and a.zhaopin_chat_types = #{params.zhaopinChatTypes}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test="params.insertTime != null and params.insertTime != ''">
+                and a.insert_time = #{params.insertTime}
+            </if>
+
+                <!-- 判断企业的id不为空 -->
+            <if test=" params.qiyeIdNotNull != '' and params.qiyeIdNotNull != null and params.qiyeIdNotNull != 'null' ">
+                and a.qiye_id IS NOT NULL
+            </if>
+            <if test=" params.qiyeName != '' and params.qiyeName != null and params.qiyeName != 'null' ">
+                and qiye.qiye_name like CONCAT('%',#{params.qiyeName},'%')
+            </if>
+            <if test="params.qiyeTypes != null  and params.qiyeTypes != ''">
+                and qiye.qiye_types = #{params.qiyeTypes}
+            </if>
+
+            <if test=" params.qiyePhone != '' and params.qiyePhone != null and params.qiyePhone != 'null' ">
+                and qiye.qiye_phone like CONCAT('%',#{params.qiyePhone},'%')
+            </if>
+            <if test=" params.qiyeEmail != '' and params.qiyeEmail != null and params.qiyeEmail != 'null' ">
+                and qiye.qiye_email like CONCAT('%',#{params.qiyeEmail},'%')
+            </if>
+            <if test=" params.qiyeGuimo != '' and params.qiyeGuimo != null and params.qiyeGuimo != 'null' ">
+                and qiye.qiye_guimo like CONCAT('%',#{params.qiyeGuimo},'%')
+            </if>
+            <if test=" params.qiyeChenglishijianTimeStart != '' and params.qiyeChenglishijianTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(qiye.qiye_chenglishijian_time) >= UNIX_TIMESTAMP(#{params.qiyeChenglishijianTimeStart}) ]]>
+            </if>
+            <if test=" params.qiyeChenglishijianTimeEnd != '' and params.qiyeChenglishijianTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(qiye.qiye_chenglishijian_time) <= UNIX_TIMESTAMP(#{params.qiyeChenglishijianTimeEnd}) ]]>
+            </if>
+            <if test="params.qiyeChenglishijianTime != null and params.qiyeChenglishijianTime != ''">
+                and a.qiye_chenglishijian_time = #{params.qiyeChenglishijianTime}
+            </if>
+            <if test=" params.qiyeContent != '' and params.qiyeContent != null and params.qiyeContent != 'null' ">
+                and qiye.qiye_content like CONCAT('%',#{params.qiyeContent},'%')
+            </if>
+            <if test="params.qiyeDeleteStart != null  and params.qiyeDeleteStart != '' ">
+                <![CDATA[  and qiye.qiye_delete >= #{params.qiyeDeleteStart}   ]]>
+            </if>
+            <if test="params.qiyeDeleteEnd != null  and params.qiyeDeleteEnd != '' ">
+                <![CDATA[  and qiye.qiye_delete <= #{params.qiyeDeleteEnd}   ]]>
+            </if>
+            <if test="params.qiyeDelete != null  and params.qiyeDelete != '' ">
+                and qiye.qiye_delete = #{params.qiyeDelete}
+            </if>
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+            <if test="params.yonghuZhuangtaiTypes != null  and params.yonghuZhuangtaiTypes != ''">
+                and yonghu.yonghu_zhuangtai_types = #{params.yonghuZhuangtaiTypes}
+            </if>
+
+        </where>
+        order by a.${params.sort} ${params.order}
+    </select>
+
+</mapper>
